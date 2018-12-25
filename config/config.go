@@ -15,6 +15,15 @@ import (
 type Config struct {
 	// TMConfig is the tendermint node configuration.
 	TMConfig *tmcfg.Config
+
+	// AppConfig is the tendermint app configuration.
+	AppConfig *AppConfig
+}
+
+// AppConfig holds the tendermint application configuration.
+type AppConfig struct {
+	// DBDir is the database directory path.
+	DBDir string
 }
 
 // ensureTMGenesis creates the tendermint genesis configuration
@@ -52,6 +61,16 @@ func getTMRootDir() (string, error) {
 	return folder.Path, nil
 }
 
+// getAppDir obtains the tendermint app database directory.
+func getAppDir() (string, error) {
+	dir := configdir.New("boring", "app")
+	folder := dir.QueryFolders(configdir.Global)[0]
+	if err := folder.MkdirAll(); err != nil {
+		return "", fmt.Errorf("Unable to create app directory: %s", err)
+	}
+	return folder.Path, nil
+}
+
 // GetConfig obtains the configuration
 func GetConfig() (*Config, error) {
 	tmconfig := tmcfg.DefaultConfig()
@@ -59,5 +78,12 @@ func GetConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Config{tmconfig.SetRoot(rootdir)}, nil
+	appdir, err := getAppDir()
+	if err != nil {
+		return nil, err
+	}
+	return &Config{
+		TMConfig:  tmconfig.SetRoot(rootdir),
+		AppConfig: &AppConfig{appdir},
+	}, nil
 }
