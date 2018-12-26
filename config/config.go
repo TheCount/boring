@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"time"
 
+	"github.com/TheCount/boring"
 	"github.com/shibukawa/configdir"
 	tmcfg "github.com/tendermint/tendermint/config"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -38,8 +38,8 @@ func ensureTMGenesis(folder *configdir.Config) error {
 		return fmt.Errorf("Unable to create genesis config directory: %s", err)
 	}
 	genesis := tmtypes.GenesisDoc{
-		GenesisTime: time.Date(2018, 12, 25, 13, 0, 0, 0, time.UTC),
-		ChainID:     "boring-testnet",
+		GenesisTime: boring.GenesisTime,
+		ChainID:     boring.ChainIDTestnet,
 	}
 	jsonBytes, err := json.Marshal(&genesis)
 	if err != nil {
