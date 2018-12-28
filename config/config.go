@@ -24,13 +24,6 @@ type Config struct {
 type AppConfig struct {
 	// DBDir is the database directory path.
 	DBDir string
-
-	// ValidatorPath is the path to the validator private key
-	// (if this node acts as a validator).
-	ValidatorPath string
-
-	// NodeKeyPath is the path to the node key.
-	NodeKeyPath string
 }
 
 // ensureTMGenesis creates the tendermint genesis configuration
@@ -90,11 +83,7 @@ func GetConfig() (*Config, error) {
 		return nil, err
 	}
 	return &Config{
-		TMConfig: tmconfig.SetRoot(rootdir),
-		AppConfig: &AppConfig{
-			DBDir:         filepath.Join(appdir, "db"),
-			ValidatorPath: filepath.Join(appdir, "validator.json"),
-			NodeKeyPath:   filepath.Join(appdir, "node.json"),
-		},
+		TMConfig:  tmconfig.SetRoot(rootdir),
+		AppConfig: &AppConfig{appdir},
 	}, nil
 }
