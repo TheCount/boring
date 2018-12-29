@@ -4,6 +4,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/TheCount/boring/config"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -26,6 +27,14 @@ type App struct {
 
 	// State is the current application state.
 	State *State
+
+	// DeliveredBlockHeight is the height of the block currently being processed.
+	// To be used only by the consensus connection.
+	DeliveredBlockHeight int64
+
+	// DeliveredBlockTime is the time of the block currently being processed.
+	// To be used only by the consensus connection.
+	DeliveredBlockTime time.Time
 }
 
 // NewApp creates a new application.
