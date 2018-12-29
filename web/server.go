@@ -1,0 +1,11 @@
+package web
+
+import (
+	"net/http"
+)
+
+// Serve starts the web server and blocks until an error occurs.
+func (w *Web) Serve() error {
+	http.Handle("/", &mainHandler{w})
+	return http.ListenAndServe("localhost:22222", nil)
+}
