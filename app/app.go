@@ -35,6 +35,15 @@ type App struct {
 	// DeliveredBlockTime is the time of the block currently being processed.
 	// To be used only by the consensus connection.
 	DeliveredBlockTime time.Time
+
+	// CheckMinBlockHeight is the smallest possible block height at which
+	// CheckTx should assume transactions to be included in.
+	CheckMinBlockHeight int64
+
+	// CheckBeforeBlockTime is a point in time CheckTx should assume to have
+	// happened before the next possible block
+	// new transactions can be included in.
+	CheckBeforeBlockTime time.Time
 }
 
 // NewApp creates a new application.

@@ -73,3 +73,13 @@ func LoadState(dbPath string) (result *State, err error) {
 	}
 	return
 }
+
+// Commit commits the current DeliverState to the QueryState of this state,
+// and then resets DeliverState and CheckState to the new QueryState.
+func (s *State) Commit() ctypes.CommitID {
+	s.DeliverState.Write()
+	result := s.QueryState.Commit()
+	s.DeliverState = cstore.NewCacheKVStore(s.QueryState)
+	s.CheckState = cstore.NewCacheKVStore(s.QueryState)
+	return result
+}
