@@ -9,6 +9,17 @@ import (
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 )
 
+const (
+	// Version is the application semantic version.
+	Version = "0.0.0"
+
+	// ProtocolVersion is the current protocol version of the application.
+	ProtocolVersion = 0
+
+	// StoreFormatVersion is the version of the storage format.
+	StoreFormatVersion = 0
+)
+
 // App contains the tendermint application data.
 type App struct {
 	abcitypes.BaseApplication
