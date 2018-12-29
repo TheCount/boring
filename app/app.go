@@ -3,6 +3,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/TheCount/boring/config"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 )
@@ -11,14 +13,18 @@ import (
 type App struct {
 	abcitypes.BaseApplication
 
-	// DBDir is the App database directory path.
-	DBDir string
+	// State is the current application state.
+	State *State
 }
 
 // NewApp creates a new application.
 func NewApp(cfg *config.AppConfig) (*App, error) {
+	state, err := LoadState(cfg.DBDir)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to load application state: %s", err)
+	}
 	return &App{
 		BaseApplication: *abcitypes.NewBaseApplication(),
-		DBDir:           cfg.DBDir,
+		State:           state,
 	}, nil
 }
