@@ -50,6 +50,7 @@ type mainHandler struct {
 
 // ServeHTTP serves the main page.
 func (h *mainHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.web.SetDefaultHeaders(w)
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
