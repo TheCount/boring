@@ -32,6 +32,12 @@ var mainTemplate = template.Must(template.New("main").Parse(
       </table>
       <br />
       <a href="/">Refresh</a>
+			<h1>Menu</h1>
+			<ul>
+				<li>
+					<a href="/wallets">Wallets</a>
+				</li>
+			</ul>
     </body>
   </html>`,
 ))
