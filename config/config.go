@@ -18,6 +18,9 @@ type Config struct {
 
 	// AppConfig is the tendermint app configuration.
 	AppConfig *AppConfig
+
+	// WalletConfig is the wallet configuration.
+	WalletConfig *WalletConfig
 }
 
 // AppConfig holds the tendermint application configuration.
@@ -82,8 +85,13 @@ func GetConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	walletConfig, err := getWalletConfig()
+	if err != nil {
+		return nil, err
+	}
 	return &Config{
-		TMConfig:  tmconfig.SetRoot(rootdir),
-		AppConfig: &AppConfig{appdir},
+		TMConfig:     tmconfig.SetRoot(rootdir),
+		AppConfig:    &AppConfig{appdir},
+		WalletConfig: walletConfig,
 	}, nil
 }
