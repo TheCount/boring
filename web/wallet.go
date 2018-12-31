@@ -55,7 +55,7 @@ func (h *walletsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	data := walletsData{h.web.WalletConfig.Names}
+	data := walletsData{h.web.GetWalletNames()}
 	if err := walletsTemplate.Execute(w, data); err != nil {
 		w.Write([]byte(fmt.Sprintf("Template error: %s", err)))
 	}
