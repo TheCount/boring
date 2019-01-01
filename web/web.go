@@ -2,37 +2,23 @@
 package web
 
 import (
-	"sync"
-
-	"github.com/TheCount/boring/config"
+	"github.com/TheCount/boring/wallet"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 )
 
 // Web encapsulates the web frontend.
 type Web struct {
-	// mtx is a mutex to protect those members of this struct which are
-	// not concurency safe.
-	mtx sync.Mutex
-
 	// Client is a tendermint RPC client.
 	Client tmclient.Client
 
-	// WalletConfig is the wallet configuration.
-	WalletConfig *config.WalletConfig
+	// WalletManager is the wallet manager.
+	WalletManager *wallet.Manager
 }
 
 // NewWeb creates a new web frontend.
-func NewWeb(client tmclient.Client, walletConfig *config.WalletConfig) *Web {
+func NewWeb(client tmclient.Client, walletManager *wallet.Manager) *Web {
 	return &Web{
-		Client:       client,
-		WalletConfig: walletConfig,
+		Client:        client,
+		WalletManager: walletManager,
 	}
-}
-
-// GetWalletNames obtains a copy of the current wallet names.
-func (w *Web) GetWalletNames() (result []string) {
-	w.mtx.Lock()
-	defer w.mtx.Unlock()
-	result = append(result, w.WalletConfig.Names...)
-	return
 }
