@@ -88,3 +88,27 @@ func NewWallet(dir, name, password string) (*Wallet, error) {
 		store: store,
 	}, nil
 }
+
+// OpenWallet opens the specified wallet.
+func OpenWallet(dir, name string) (*Wallet, error) {
+	// Open wallet store.
+	store, err := db.NewGoLevelDB(name, dir)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to open wallet database: %s", err)
+	}
+	if !store.Iterator(nil, nil).Valid() {
+		store.Close()
+		return nil, fmt.Errorf("Database '%s/%s' does not exist", dir, name)
+	}
+	return &Wallet{
+		store: store,
+	}, nil
+}
+
+// Close closes this wallet.
+// Regardless of the return value, it is illegal to refer to this wallet
+// after it has been closed.
+func (w *Wallet) Close() error {
+	w.store.Close()
+	return nil
+}

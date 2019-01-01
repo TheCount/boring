@@ -22,11 +22,29 @@ type Manager struct {
 
 // NewManager creates a new wallet manager from the specified
 // configuration.
-func NewManager(cfg *config.WalletConfig) *Manager {
-	return &Manager{
+func NewManager(cfg *config.WalletConfig) (*Manager, error) {
+	result := &Manager{
 		cfg:         cfg,
 		openWallets: make(map[string]*Wallet),
 	}
+
+	// Open all known wallets
+	success := false
+	for _, name := range cfg.Names {
+		wallet, err := OpenWallet(cfg.WalletsDir, name)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to open wallet '%s': %s", name, err)
+		}
+		defer func(wallet *Wallet) {
+			if !success {
+				wallet.Close()
+			}
+		}(wallet)
+		result.openWallets[name] = wallet
+	}
+
+	success = true
+	return result, nil
 }
 
 // GetWalletNames returns a copy of the list of wallet names.
@@ -58,4 +76,20 @@ func (m *Manager) CreateWallet(name, password string) error {
 		)
 	}
 	return nil
+}
+
+// CloseAllWallets closes all wallets opened by this wallet manager.
+func (m *Manager) CloseAllWallets() (err error) {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	for _, wallet := range m.openWallets {
+		if err2 := wallet.Close(); err2 != nil {
+			err = err2
+		}
+	}
+	m.openWallets = make(map[string]*Wallet)
+	if err != nil {
+		err = fmt.Errorf("Error closing wallets, most recent error was: %s", err)
+	}
+	return
 }
