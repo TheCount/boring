@@ -8,5 +8,6 @@ import (
 func (w *Web) Serve() error {
 	http.Handle("/", &mainHandler{w})
 	http.Handle("/wallets/", &walletsHandler{w})
+	http.Handle("/wallets/new", &walletsNewHandler{w})
 	return http.ListenAndServe("localhost:22222", nil)
 }
