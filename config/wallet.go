@@ -90,3 +90,9 @@ func (wc *WalletConfig) RemoveName(name string) {
 		wc.Names = wc.Names[:len(wc.Names)-1]
 	}
 }
+
+// HasName checks whether this wallet configuration contains the specified name.
+func (wc *WalletConfig) HasName(name string) bool {
+	index := sort.SearchStrings(wc.Names, name)
+	return index != len(wc.Names) && wc.Names[index] == name
+}
