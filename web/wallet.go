@@ -133,6 +133,24 @@ func (h *walletsNewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var walletsNewCreatedTemplate = template.Must(template.New(
+	"templateNewCreated",
+).Parse(
+	`<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Boring — Wallet successfully created</title>
+		</head>
+		<body>
+			<a href="/wallets">Back</a>
+			<h1>Wallet created</h1>
+			Wallet
+			<a href="/wallets/wallet/{{.}}">{{.}}</a>
+			has been successfully created.
+		</body>
+	</html>`,
+))
+
 // createWallet creates the new wallet.
 func (h *walletsNewHandler) createWallet(
 	w http.ResponseWriter, r *http.Request,
@@ -143,7 +161,16 @@ func (h *walletsNewHandler) createWallet(
 		h.errorPage(w, http.StatusBadRequest, format, err)
 		return
 	}
-	w.WriteHeader(http.StatusNotImplemented) // FIXME
+	if err := h.web.WalletManager.CreateWallet(
+		rpc.Name, rpc.Password,
+	); err != nil {
+		h.errorPage(w, http.StatusInternalServerError, format, err)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	if err := walletsNewCreatedTemplate.Execute(w, rpc.Name); err != nil {
+		w.Write([]byte(fmt.Sprintf("Template error: %s", err)))
+	}
 }
 
 var walletsNewErrorTemplate = template.Must(template.New(
