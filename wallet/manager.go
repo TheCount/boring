@@ -78,6 +78,14 @@ func (m *Manager) CreateWallet(name, password string) error {
 	return nil
 }
 
+// HasWallet checks whether this manager has opened the specified wallet.
+func (m *Manager) HasWallet(name string) bool {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	_, ok := m.openWallets[name]
+	return ok
+}
+
 // CloseAllWallets closes all wallets opened by this wallet manager.
 func (m *Manager) CloseAllWallets() (err error) {
 	m.mtx.Lock()
@@ -92,4 +100,16 @@ func (m *Manager) CloseAllWallets() (err error) {
 		err = fmt.Errorf("Error closing wallets, most recent error was: %s", err)
 	}
 	return
+}
+
+// IsLocked checks whether the wallet with the specified name is locked.
+// If there is no open wallet with the specified name, false is returned.
+func (m *Manager) IsLocked(name string) bool {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	wallet, ok := m.openWallets[name]
+	if ok {
+		return wallet.IsLocked()
+	}
+	return false
 }
