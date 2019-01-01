@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/tendermint/tendermint/libs/db"
 	"golang.org/x/crypto/bcrypt"
@@ -36,6 +37,15 @@ const (
 type Wallet struct {
 	// store is the storage backend of this wallet.
 	store db.DB
+
+	// secretKey is the secret key for this wallet.
+	// It is nil if this wallet is locked.
+	secretKey []byte
+
+	// unlockedUntil denotes the time after which the wallet is re-locked if
+	// secretKey is non-nil.
+	// If secretKey is nil, the value of unlockedUntil is unspecified.
+	unlockedUntil time.Time
 }
 
 // NewWallet creates a new wallet with the specified name in the specified
@@ -111,4 +121,24 @@ func OpenWallet(dir, name string) (*Wallet, error) {
 func (w *Wallet) Close() error {
 	w.store.Close()
 	return nil
+}
+
+// ensureUnlocked ensures this wallet is unlocked and returns an error
+// otherwise.
+func (w *Wallet) ensureUnlocked() error {
+	if w.secretKey == nil {
+		return errors.New("Wallet is locked")
+	}
+	now := time.Now()
+	if now.After(w.unlockedUntil) {
+		w.secretKey = nil
+		return errors.New("Wallet re-locked after timeout")
+	}
+	return nil
+}
+
+// IsLocked checks whether this wallet is currently locked.
+func (w *Wallet) IsLocked() bool {
+	w.ensureUnlocked()
+	return w.secretKey == nil
 }
