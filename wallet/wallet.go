@@ -31,6 +31,9 @@ const (
 
 	// keyLength is the master key length in bytes.
 	keyLength = 32
+
+	// defaultUnlockDuration is the default duration the wallet remains unlocked.
+	defaultUnlockDuration = 5 * time.Minute
 )
 
 // Wallet encapsulates a wallet.
@@ -141,4 +144,32 @@ func (w *Wallet) ensureUnlocked() error {
 func (w *Wallet) IsLocked() bool {
 	w.ensureUnlocked()
 	return w.secretKey == nil
+}
+
+// Unlock unlocks this wallet with the specified passphrase.
+func (w *Wallet) Unlock(password string) error {
+	// Check if password matches
+	hashedPassword := w.store.Get([]byte{prefixPassword})
+	if err := bcrypt.CompareHashAndPassword(
+		hashedPassword, []byte(password),
+	); err != nil {
+		return fmt.Errorf("Bad passphrase: %s", err)
+	}
+	// decrypt secret key
+	encryptedSecret := w.store.Get([]byte{prefixKey})
+	if len(encryptedSecret) != keyLength {
+		return errors.New("Encrypted secret has bad length")
+	}
+	tempKey := sha3.Sum256(bytes.Join([][]byte{
+		[]byte(password), hashedPassword,
+	}, nil))
+	cipher, err := aes.NewCipher(tempKey[:])
+	if err != nil {
+		return fmt.Errorf("Unable to create AES-256 cipher: %s", err)
+	}
+	w.secretKey = make([]byte, keyLength)
+	cipher.Decrypt(w.secretKey, encryptedSecret)
+	now := time.Now()
+	w.unlockedUntil = now.Add(defaultUnlockDuration)
+	return nil
 }
