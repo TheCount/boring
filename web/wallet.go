@@ -234,3 +234,66 @@ func (h *walletUnlockHandler) errorPage(
 		w.Write([]byte(fmt.Sprintf(`{"Error":"%s"}`, rpcErr)))
 	}
 }
+
+var walletLockedTemplate = template.Must(template.New("walletLocked").Parse(
+	`<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Boring — Wallet {{.}} locked</title>
+		</head>
+		<body>
+			<a href="/wallets/wallet/{{.}}">Back</a>
+			<h1>Wallet locked</h1>
+			Wallet
+			<a href="/wallets/wallet/{{.}}">{{.}}</a>
+			has been successfully locked.
+		</body>
+	</html>`,
+))
+
+var walletLockErrTemplate = template.Must(template.New("walletLockErr").Parse(
+	`<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Boring — Error locking wallet</title>
+		</head>
+		<body>
+			<a href="/wallets">Back</a>
+			<h1>Error unlocking wallet</h1>
+			{{.}}
+		</body>
+	</html>`,
+))
+
+// walletLockHandler handles the locking of a wallet.
+type walletLockHandler struct {
+	// web is a back pointer to the web frontend.
+	web *Web
+}
+
+// ServeHTTP serves the wallet lock response page.
+func (h *walletLockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.web.SetDefaultHeaders(w)
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	// get name
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	name := parts[3]
+	// Lock wallet
+	if err := h.web.WalletManager.LockWallet(name); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		if err = walletLockErrTemplate.Execute(w, err.Error()); err != nil {
+			w.Write([]byte(fmt.Sprintf("Template error: %s", err)))
+		}
+		return
+	}
+	if err := walletLockedTemplate.Execute(w, name); err != nil {
+		w.Write([]byte(fmt.Sprintf("Template error: %s", err)))
+	}
+}
