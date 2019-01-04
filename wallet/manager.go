@@ -114,6 +114,19 @@ func (m *Manager) IsLocked(name string) bool {
 	return false
 }
 
+// LockWallet locks the specified wallet.
+// If the wallet is already locked, no operation is performed.
+func (m *Manager) LockWallet(name string) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+	wallet, ok := m.openWallets[name]
+	if !ok {
+		return fmt.Errorf("Wallet '%s' not opened", name)
+	}
+	wallet.Lock()
+	return nil
+}
+
 // UnlockWallet unlocks the specified wallet with the specified passphrase.
 func (m *Manager) UnlockWallet(name, password string) error {
 	m.mtx.Lock()

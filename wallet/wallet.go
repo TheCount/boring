@@ -146,6 +146,11 @@ func (w *Wallet) IsLocked() bool {
 	return w.secretKey == nil
 }
 
+// Lock locks this wallet.
+func (w *Wallet) Lock() {
+	w.secretKey = nil
+}
+
 // Unlock unlocks this wallet with the specified passphrase.
 func (w *Wallet) Unlock(password string) error {
 	// Check if password matches
